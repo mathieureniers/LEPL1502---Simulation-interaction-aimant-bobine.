@@ -1,0 +1,98 @@
+from numpy import *
+from matplotlib import pyplot as plt
+from scipy.integrate import simps
+
+# Données du problème
+
+start = 0
+end = 0.1
+
+r1 = 0.05 # m
+r2 = 0.05 # m
+v = (r1+r2) / (end/2)  # m/s
+B = 0.267 # T 
+
+
+# Aire d'intersection entre deux disques
+
+def Al(r1,r2,d):
+    if d.any() == 0:
+        return (pi*(min(r1,r2)**2))
+    h = (r1**2 - ((r1**2 - r2**2 + d**2)/(2*d))**2)**(1/2)
+    A = arcsin(h/r1)*r1**2 - h*((r1**2-h**2)**(1/2)) \
+            + arcsin(h/r2)*r2**2 - h*((r2**2-h**2)**(1/2))
+    return A
+
+def aire(x):
+    return Al(r1,r2,x)
+
+# Fonction distance
+# => 2 cas : l'aimant se rapproche où s'éloigne
+def d_1(t):
+    d0 = r1+r2
+    return d0 - v*t
+def d_2(t):
+    d1 = 0
+    return d1 + v*t
+
+# ======== Dessin des graphes ========
+
+t1 = linspace(start,(end/2)+0.0001,500)
+t2 = t1 + end/2
+
+a1 = aire(d_1(t1))
+a2 = aire(d_2(t1))
+
+# Colorier l'aire 
+plt.fill_between(t1, a1, 0 , alpha=0.30)
+plt.fill_between(t2, a2, 0 , alpha=0.30)
+
+plt.plot(t1,a1,label="Aimant se rapproche : flux augmente")
+plt.plot(t2,a2,label="Aimant s'éloigne: flux diminue")
+plt.xlabel("Temps (s)")
+plt.ylabel("Aire commune (m²)")
+plt.legend()
+plt.show()
+
+
+# ========= Integration ===========
+
+
+def integrate(a,t):
+    I = zeros(len(t))
+    for i in range(len(t)) :
+        I[i] = trapz(a[:i])
+    return I
+"""
+a1 = a1[:-1]
+a2 = a2[1:]
+
+A1 = integrate(a1,t)
+A2 = integrate(a2,t)
+plt.plot(t1,A1)
+plt.plot(t2,A2)
+plt.show()"""
+
+# ========== Dérivation ============
+
+phi1 = B*a1
+phi2 = B*a2
+
+dphi1_dt = gradient(phi1)
+dphi2_dt = gradient(phi2)
+"""plt.plot(t1,dphi1_dt)
+plt.plot(t2,dphi2_dt)
+plt.show()"""
+
+
+# ========= Tension induite =======
+
+e1 = -dphi1_dt
+e2 = -dphi2_dt
+plt.plot(t1,e1)
+plt.plot(t2,e2)
+plt.show()
+
+
+
+
